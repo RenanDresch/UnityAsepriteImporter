@@ -1,0 +1,15 @@
+{
+    "name": "GazeDev.AsepriteImporter.Editor",
+    "references": [
+        "GUID:ec52a09673ddde744b30bda78b72b01d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
