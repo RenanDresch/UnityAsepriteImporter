@@ -38,6 +38,24 @@ public enum ChunkType : UInt16
     SliceChunk = 0x2022
 }
 
+public enum LayerFlags
+{
+    Undefined = 0,
+    Visible = 1,
+    Editable = 2,
+    LockMovement = 3,
+    Background = 4,
+    PreferLinkedCels = 5,
+    Collapsed = 32,
+    RefLayer = 64
+}
+
+public enum LayerType
+{
+    Normal = 0,
+    Group = 1
+}
+
 public class AseRawCel
 {
     public AseRawCel(byte[] pixels, int cellWidth, int cellHeight, int xOffset, int yOffset,
@@ -199,6 +217,24 @@ public class AseHeader
     }
 }
 
+
+public class AseLayer
+{
+    #region Properties
+
+    public LayerFlags Flags { get; }
+    public LayerType LayerType { get; }
+
+
+    #endregion
+
+    //public AseLayer(BinaryReader reader, Aseprite file, AssetImportContext ase)
+    //{
+    //    var
+
+    //}
+}
+
 public class AseFrame
 {
     #region Properties
@@ -228,6 +264,8 @@ public class AseFrame
 
         for (var c = 0; c < chunkCount; c++)
         {
+            var position = reader.BaseStream.Position;
+
             var chunkSize = reader.ReadUInt32();
             var chunkType = (ChunkType)reader.ReadUInt16();
 
@@ -237,7 +275,6 @@ public class AseFrame
                 case ChunkType.Undefined:
                 case ChunkType.RealyOldPaletteChunk:
                 case ChunkType.OldPaletteChunk:
-                case ChunkType.LayerChunk:
                 case ChunkType.CelExtraChunk:
                 case ChunkType.ColorProfileChunk:
                 case ChunkType.MaskChunkDeprecated:
@@ -245,7 +282,7 @@ public class AseFrame
                 case ChunkType.TagsChunk:
                 case ChunkType.UserDataChunk:
                 case ChunkType.SliceChunk:
-                    reader.ReadBytes((int)chunkSize - 6); //Skip unsuported chunk
+                    //Skip unsuported chunk
                     break;
 
                 case ChunkType.PaletteChunk:
@@ -255,7 +292,14 @@ public class AseFrame
                 case ChunkType.CelChunk:
                     new AseCel(reader, file, ase);
                     break;
+
+                case ChunkType.LayerChunk:
+                    //reader.ReadBytes((int)chunkSize - 6); //Skip unsuported chunk
+                    //new AseLayer(reader, file, ase);
+                    break;
             }
+
+            reader.BaseStream.Position = position + chunkSize;
         }
     }
 }
