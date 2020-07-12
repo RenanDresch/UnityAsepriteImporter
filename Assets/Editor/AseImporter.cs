@@ -5,6 +5,8 @@ using System;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO.Compression;
+using UnityEngine.Rendering;
+using System.Text;
 
 public enum ColorDepth : UInt16
 {
@@ -38,7 +40,7 @@ public enum ChunkType : UInt16
     SliceChunk = 0x2022
 }
 
-public enum LayerFlags
+public enum LayerFlags : UInt16
 {
     Undefined = 0,
     Visible = 1,
@@ -50,19 +52,42 @@ public enum LayerFlags
     RefLayer = 64
 }
 
-public enum LayerType
+public enum LayerType : UInt16
 {
     Normal = 0,
     Group = 1
 }
 
+public enum BlendMode : UInt16
+{
+    Normal = 0,
+    Multiply = 1,
+    Screen = 2,
+    Overlay = 3,
+    Darken = 4,
+    Lighten = 5,
+    ColorDodge = 6,
+    ColorBurn = 7,
+    HardLight = 8,
+    SoftLight = 9,
+    Difference = 10,
+    Exclusion = 11,
+    Hue = 12,
+    Saturation = 13,
+    Color = 14,
+    Luminosity = 15,
+    Addition = 16,
+    Subtract = 17,
+    Divide = 18,
+}
+
 public class AseRawCel
 {
     public AseRawCel(byte[] pixels, int cellWidth, int cellHeight, int xOffset, int yOffset,
-        int textureWidth, int textureHeight, ColorDepth depth, AssetImportContext ase)
+        int textureWidth, int textureHeight, ColorDepth depth, int frameIndex, int celIndex, AssetImportContext ase)
     {
         var celTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
-        celTexture.name = "CelTexture";
+        celTexture.name = $"Frame_{frameIndex}_Cel_{celIndex}";
         celTexture.filterMode = FilterMode.Point;
 
         var colors = new List<Color32>();
@@ -98,14 +123,14 @@ public class AseRawCel
         }
 
         celTexture.SetPixels32(colors.ToArray());
-        ase.AddObjectToAsset("cel texture", celTexture);
+        ase.AddObjectToAsset(celTexture.name, celTexture);
 
     }
 }
 
 public class AseCel
 {
-    public AseCel(BinaryReader reader, Aseprite file, AssetImportContext ase)
+    public AseCel(BinaryReader reader, Aseprite file, int frameIndex, int celIndex, AssetImportContext ase)
     {
         var layerIndex = reader.ReadUInt16();
         var xPosition = reader.ReadInt16();
@@ -141,7 +166,7 @@ public class AseCel
                 var deflate = new DeflateStream(reader.BaseStream, CompressionMode.Decompress);
                 deflate.Read(celData, 0, celWidth * celHeight * 4);
 
-                new AseRawCel(celData, celWidth, celHeight, xPosition, yPosition, file.Header.Width, file.Header.Height, file.Header.ColorDepth, ase);
+                new AseRawCel(celData, celWidth, celHeight, xPosition, yPosition, file.Header.Width, file.Header.Height, file.Header.ColorDepth, frameIndex, celIndex, ase);
 
                 break;
 
@@ -224,32 +249,44 @@ public class AseLayer
 
     public LayerFlags Flags { get; }
     public LayerType LayerType { get; }
-
+    public int LayerChildLevel { get; }
+    public BlendMode BlendMode { get; }
+    public int Opacity { get; }
+    public string Name { get; }
 
     #endregion
 
-    //public AseLayer(BinaryReader reader, Aseprite file, AssetImportContext ase)
-    //{
-    //    var
-
-    //}
+    public AseLayer(BinaryReader reader, Aseprite file, AssetImportContext ase)
+    {
+        Flags = (LayerFlags)reader.ReadUInt16();
+        LayerType = (LayerType)reader.ReadUInt16();
+        LayerChildLevel = reader.ReadUInt16();
+        var layerWidth = reader.ReadUInt16(); //Ignored;
+        var layerHeight = reader.ReadUInt16(); //Ignored;
+        BlendMode = (BlendMode)reader.ReadUInt16();
+        Opacity = reader.ReadByte();
+        reader.ReadBytes(3); //For Future
+        var nameSize = reader.ReadUInt16();
+        var name = reader.ReadBytes(nameSize);
+        Name = Encoding.UTF8.GetString(name, 0, nameSize);
+    }
 }
 
 public class AseFrame
 {
     #region Properties
 
-    public UInt32 FrameSize { get; private set; }
-    public UInt16 MagicNumber { get; private set; }
-    public int ChunkCount { get; private set; }
-    public UInt16 FrameDuration { get; private set; }
+    public int FrameSize { get; }
+    public int MagicNumber { get; }
+    public int ChunkCount { get; }
+    public int FrameDuration { get; }
 
     #endregion
 
-    public AseFrame(BinaryReader reader, Aseprite file, AssetImportContext ase)
+    public AseFrame(BinaryReader reader, Aseprite file, int frameIndex, AssetImportContext ase)
     {
-        FrameSize = reader.ReadUInt32();
-        MagicNumber = reader.ReadUInt16();
+        FrameSize = (int)reader.ReadUInt32();
+        MagicNumber = (int)reader.ReadUInt16();
 
         if (MagicNumber != 0xF1FA)
         {
@@ -261,6 +298,8 @@ public class AseFrame
         reader.ReadBytes(2); //Set to 0
         var newChunkCount = reader.ReadUInt32();
         var chunkCount = oldChunkCount == 0xFFFF ? newChunkCount : oldChunkCount;
+
+        var celIndex = 0;
 
         for (var c = 0; c < chunkCount; c++)
         {
@@ -290,28 +329,18 @@ public class AseFrame
                     break;
 
                 case ChunkType.CelChunk:
-                    new AseCel(reader, file, ase);
+                    new AseCel(reader, file, frameIndex, celIndex, ase);
+                    celIndex++;
                     break;
 
                 case ChunkType.LayerChunk:
-                    //reader.ReadBytes((int)chunkSize - 6); //Skip unsuported chunk
-                    //new AseLayer(reader, file, ase);
+                    new AseLayer(reader, file, ase);
                     break;
             }
 
             reader.BaseStream.Position = position + chunkSize;
         }
     }
-}
-
-public class AseChunk
-{
-    #region Properties
-
-    public UInt32 ChunkSize { get; private set; }
-    public ChunkType ChunkType { get; private set; }
-
-    #endregion
 }
 
 public class PaletteChunk
@@ -398,7 +427,6 @@ public class Aseprite
             if (Header.MagicNumber != 0xA5E0)
             {
                 Debug.LogError($"{ase.assetPath} not an Aseprite file!");
-                Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(ase.assetPath);
                 return;
             }
 
@@ -406,7 +434,7 @@ public class Aseprite
             {
                 var position = reader.BaseStream.Position;
 
-                var frame = new AseFrame(reader, this, ase);
+                var frame = new AseFrame(reader, this, f, ase);
                 if (frame.MagicNumber != 0xF1FA)
                 {
                     Debug.LogError("Corrupted Aseprite file!", AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(ase.assetPath));
@@ -445,7 +473,7 @@ public class Aseprite
             }
 
             ase.AddObjectToAsset("Color Palette", paletteTexture);
-
+            ase.SetMainObject(paletteTexture);
         }
     }
 }
