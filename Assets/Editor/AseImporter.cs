@@ -43,49 +43,41 @@ public class AseRawCel
     public AseRawCel(byte[] pixels, int cellWidth, int cellHeight, int xOffset, int yOffset,
         int textureWidth, int textureHeight, ColorDepth depth, AssetImportContext ase)
     {
-
         var celTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
         celTexture.name = "CelTexture";
         celTexture.filterMode = FilterMode.Point;
 
         var colors = new List<Color32>();
 
-        //Complete yOffset with "clear pixels"
-        for(var i=0; i<textureWidth*yOffset; i++)
-        {
-            colors.Add(new Color32(0, 0, 0, 0));
-        }
-
-        Debug.Log(colors.Count);
-
-        //Flip Y to write it into Unity Texture2D indexation format
         for (var r = cellHeight - 1; r > -1; r--)
         {
             for (var c = 0; c < textureWidth; c++)
             {
-                if (c > cellWidth || c < xOffset)
+                if (r > textureHeight - yOffset)
                 {
                     colors.Add(new Color32(0, 0, 0, 0));
                 }
                 else
                 {
-                    colors.Add(new Color32(pixels[(r * (4 * cellWidth)) + (c * 4) + 0],
-                        pixels[(r * (4 * cellWidth)) + (c * 4) + 1],
-                        pixels[(r * (4 * cellWidth)) + (c * 4) + 2],
-                        pixels[(r * (4 * cellWidth)) + (c * 4) + 3]));
+                    if (c >= (cellWidth+xOffset) || c < xOffset)
+                    {
+                        colors.Add(new Color32(0, 0, 0, 0));
+                    }
+                    else
+                    {
+                        colors.Add(new Color32(pixels[(r * (4 * cellWidth)) + ((c-xOffset) * 4) + 0],
+                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 1],
+                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 2],
+                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 3]));
+                    }
                 }
             }
         }
 
-        Debug.Log(colors.Count);
-
-        //Fill with "clear pixels" 
-        while (colors.Count < textureWidth*textureHeight)
+        while (colors.Count < textureWidth * textureHeight)
         {
             colors.Add(new Color32(0, 0, 0, 0));
         }
-
-        Debug.Log(colors.Count);
 
         celTexture.SetPixels32(colors.ToArray());
         ase.AddObjectToAsset("cel texture", celTexture);
@@ -105,22 +97,22 @@ public class AseCel
 
         reader.ReadBytes(7); //For future
 
-        AseRawCel cel;
-
         switch (cellType)
         {
             case CelType.Raw:
-                Debug.Log("Raw");
+                Debug.Log("Raw Cel");
                 //cel = new AseRawCel(reader, file.ColorDepth, file.Width, file.Height, ase);
                 break;
 
             case CelType.Linked:
-                Debug.Log("Linked");
+                Debug.Log("Linked Cel");
                 reader.Close();
                 throw new System.NotImplementedException("Linked cel not supported! Aborting!");
                 break;
 
             case CelType.CompressedImage:
+                Debug.Log("Compressed Image Cel");
+
                 var celWidth = reader.ReadUInt16();
                 var celHeight = reader.ReadUInt16();
 
@@ -131,7 +123,7 @@ public class AseCel
                 var deflate = new DeflateStream(reader.BaseStream, CompressionMode.Decompress);
                 deflate.Read(celData, 0, celWidth * celHeight * 4);
 
-                new AseRawCel(celData, celWidth, celHeight, xPosition, yPosition, file.Width, file.Height, file.ColorDepth, ase);
+                new AseRawCel(celData, celWidth, celHeight, xPosition, yPosition, file.Header.Width, file.Header.Height, file.Header.ColorDepth, ase);
 
                 break;
 
@@ -346,9 +338,7 @@ public class Aseprite
 
     #region Properties
 
-    public int Width { get; }
-    public int Height { get; }
-    public ColorDepth ColorDepth { get; }
+    public AseHeader Header { get; }
     public List<AseFrame> Frames => _frames;
     public PaletteChunk Palette { get; set; }
 
@@ -359,20 +349,16 @@ public class Aseprite
         using (BinaryReader reader = new BinaryReader(File.Open(ase.assetPath, FileMode.Open)))
         {
 
-            var header = new AseHeader(reader, ase);
+            Header = new AseHeader(reader, ase);
 
-            if (header.MagicNumber != 0xA5E0)
+            if (Header.MagicNumber != 0xA5E0)
             {
                 Debug.LogError($"{ase.assetPath} not an Aseprite file!");
                 Selection.activeObject = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(ase.assetPath);
                 return;
             }
 
-            Width = header.Width;
-            Height = header.Height;
-            ColorDepth = header.ColorDepth;
-
-            for (var f = 0; f < header.FrameCount; f++)
+            for (var f = 0; f < Header.FrameCount; f++)
             {
                 var position = reader.BaseStream.Position;
 
