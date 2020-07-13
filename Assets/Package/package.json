@@ -1,0 +1,7 @@
+{
+    "name": "com.gazeinteractive.unityasepriteimporter",
+    "displayName": "Unity Aseprite Importer",
+    "version": "1.0.0",
+    "unity": "2018",
+    "description": "Add support for .ase and .aseprite file formats."
+}
