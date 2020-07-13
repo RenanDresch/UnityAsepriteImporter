@@ -5,7 +5,6 @@ using System;
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO.Compression;
-using UnityEngine.Rendering;
 using System.Text;
 
 public enum ColorDepth : UInt16
@@ -83,55 +82,51 @@ public enum BlendMode : UInt16
 
 public class AseRawCel
 {
-    public AseRawCel(byte[] pixels, int cellWidth, int cellHeight, int xOffset, int yOffset,
+}
+
+public class AseCel
+{
+    #region Properties
+
+    public Color32[] Pixels { get; }
+
+    #endregion
+
+    #region Private Methods
+
+    private Color32[] GetCelPixels(byte[] pixels, int cellWidth, int cellHeight, int xOffset, int yOffset,
         int textureWidth, int textureHeight, ColorDepth depth, int frameIndex, int celIndex, AssetImportContext ase)
     {
-        var celTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
-        celTexture.name = $"Frame_{frameIndex}_Cel_{celIndex}";
-        celTexture.filterMode = FilterMode.Point;
+        var colors = new Color32[textureWidth * textureHeight];
+        var celPixelIndex = 0;
 
-        var colors = new List<Color32>();
-
-        for (var r = cellHeight - 1; r > -1; r--)
+        for (var r = textureHeight - 1; r > -1; r--)
         {
             for (var c = 0; c < textureWidth; c++)
             {
-                if (r > textureHeight - yOffset)
+                if (r < textureHeight - yOffset && celPixelIndex < pixels.Length)
                 {
-                    colors.Add(new Color32(0, 0, 0, 0));
-                }
-                else
-                {
-                    if (c >= (cellWidth+xOffset) || c < xOffset)
+                    if (c < (cellWidth + xOffset) && c >= xOffset)
                     {
-                        colors.Add(new Color32(0, 0, 0, 0));
-                    }
-                    else
-                    {
-                        colors.Add(new Color32(pixels[(r * (4 * cellWidth)) + ((c-xOffset) * 4) + 0],
-                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 1],
-                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 2],
-                            pixels[(r * (4 * cellWidth)) + ((c - xOffset) * 4) + 3]));
+                        colors[r * textureWidth + c] = new Color32(
+                            pixels[celPixelIndex],
+                            pixels[celPixelIndex + 1],
+                            pixels[celPixelIndex + 2],
+                            pixels[celPixelIndex + 3]);
+                        celPixelIndex += 4;
                     }
                 }
             }
         }
 
-        while (colors.Count < textureWidth * textureHeight)
-        {
-            colors.Add(new Color32(0, 0, 0, 0));
-        }
-
-        celTexture.SetPixels32(colors.ToArray());
-        ase.AddObjectToAsset(celTexture.name, celTexture);
-
+        return colors;
     }
-}
 
-public class AseCel
-{
+    #endregion
+
     public AseCel(BinaryReader reader, Aseprite file, int frameIndex, int celIndex, AssetImportContext ase)
     {
+
         var layerIndex = reader.ReadUInt16();
         var xPosition = reader.ReadInt16();
         var yPosition = reader.ReadInt16();
@@ -144,14 +139,13 @@ public class AseCel
         {
             case CelType.Raw:
                 Debug.Log("Raw Cel");
-                //cel = new AseRawCel(reader, file.ColorDepth, file.Width, file.Height, ase);
-                break;
+                reader.Close();
+                throw new System.NotImplementedException("Raw cel not supported! Aborting!");
 
             case CelType.Linked:
                 Debug.Log("Linked Cel");
                 reader.Close();
                 throw new System.NotImplementedException("Linked cel not supported! Aborting!");
-                break;
 
             case CelType.CompressedImage:
                 Debug.Log("Compressed Image Cel");
@@ -166,14 +160,12 @@ public class AseCel
                 var deflate = new DeflateStream(reader.BaseStream, CompressionMode.Decompress);
                 deflate.Read(celData, 0, celWidth * celHeight * 4);
 
-                new AseRawCel(celData, celWidth, celHeight, xPosition, yPosition, file.Header.Width, file.Header.Height, file.Header.ColorDepth, frameIndex, celIndex, ase);
-
+                Pixels = GetCelPixels(celData, celWidth, celHeight, xPosition, yPosition, file.Header.Width, file.Header.Height, file.Header.ColorDepth, frameIndex, celIndex, ase);
                 break;
 
             default:
                 reader.Close();
                 throw new System.NotImplementedException("Undefined cel not supported! Aborting!");
-                break;
         }
     }
 }
@@ -281,6 +273,62 @@ public class AseFrame
     public int ChunkCount { get; }
     public int FrameDuration { get; }
 
+    public AseCel[] Cels { get; }
+
+    public Color32[] MergedFrame { get; }
+
+    #endregion
+
+    #region Private Methods
+
+    private int MUL_UN8(int a, int b)
+    {
+        var t = (a * b) + 128;
+        var result = (((t >> 8) + t) >> 8); //((t/(2^8) + t) / (2^8))
+        return result;
+    }
+
+
+    private Color32 NormalBlend(Color32 source, Color32 target)
+    {
+        Color32 result = new Color32();
+
+        if (target.a == 0)
+        {
+            result = source;
+        }
+        else if (source.a == 0)
+        {
+            result = target;
+        }
+        else
+        {
+            result.a = (byte)(source.a + target.a - MUL_UN8(target.a, source.a));
+
+            result.r = (byte)(target.r + (source.r - target.r) * source.a / result.a);
+            result.g = (byte)(target.g + (source.g - target.g) * source.a / result.a);
+            result.b = (byte)(target.b + (source.b - target.b) * source.a / result.a);
+        }
+
+        return result;
+    }
+
+
+    private Color32[] MergeCels()
+    {
+        var pixels = new List<Color32>(Cels[Cels.Length - 1].Pixels);
+
+        for(var c = Cels.Length-1; c > 0; c--)
+        {
+            for (var p = 0; p < pixels.Count; p++)
+            {
+                pixels[p] = NormalBlend(pixels[p], Cels[c - 1].Pixels[p]);
+            }
+        }
+
+        return pixels.ToArray();
+    }
+
     #endregion
 
     public AseFrame(BinaryReader reader, Aseprite file, int frameIndex, AssetImportContext ase)
@@ -300,6 +348,8 @@ public class AseFrame
         var chunkCount = oldChunkCount == 0xFFFF ? newChunkCount : oldChunkCount;
 
         var celIndex = 0;
+
+        var cels = new List<AseCel>();
 
         for (var c = 0; c < chunkCount; c++)
         {
@@ -329,7 +379,7 @@ public class AseFrame
                     break;
 
                 case ChunkType.CelChunk:
-                    new AseCel(reader, file, frameIndex, celIndex, ase);
+                    cels.Add(new AseCel(reader, file, frameIndex, celIndex, ase));
                     celIndex++;
                     break;
 
@@ -339,6 +389,21 @@ public class AseFrame
             }
 
             reader.BaseStream.Position = position + chunkSize;
+        }
+
+        Cels = cels.ToArray();
+        
+        if(Cels.Length > 1)
+        {
+            MergedFrame = MergeCels();
+        }
+        else if(Cels.Length == 1)
+        {
+            MergedFrame = Cels[0].Pixels;
+        }
+        else
+        {
+            MergedFrame = new Color32[file.Header.Width * file.Header.Height];
         }
     }
 }
@@ -382,21 +447,22 @@ public class PaletteChunk
     }
 }
 
-[ScriptedImporter(1, "ase")]
-public class AseImporter : ScriptedImporter
-{
-    public override void OnImportAsset(AssetImportContext ase)
-    {
-        var aseprite = new Aseprite(ase);
-    }
-}
-
-[ScriptedImporter(1, "aseprite")]
+[ScriptedImporter(1, new string[] { "aseprite", "ase" })]
 public class AsepriteImporter : ScriptedImporter
 {
+    public Aseprite Aseprite;
+
     public override void OnImportAsset(AssetImportContext ase)
     {
-        var aseprite = new Aseprite(ase);
+        Aseprite = new Aseprite(ase);
+
+        ase.AddObjectToAsset(Aseprite.Atlas.name, Aseprite.Atlas, Aseprite.Atlas);
+        ase.SetMainObject(Aseprite.Atlas);
+
+        foreach(var sprite in Aseprite.Sprites)
+        {
+            ase.AddObjectToAsset(sprite.name, sprite);
+        }
     }
 }
 
@@ -407,6 +473,12 @@ public class Aseprite
 
     private List<AseFrame> _frames = new List<AseFrame>();
 
+    [SerializeField]
+    private Texture2D _atlas;
+
+    [SerializeField]
+    private Sprite[] _sprites;
+
     #endregion
 
     #region Properties
@@ -414,6 +486,9 @@ public class Aseprite
     public AseHeader Header { get; }
     public List<AseFrame> Frames => _frames;
     public PaletteChunk Palette { get; set; }
+
+    public Texture2D Atlas => _atlas;
+    public Sprite[] Sprites => _sprites;
 
     #endregion
 
@@ -432,8 +507,6 @@ public class Aseprite
 
             for (var f = 0; f < Header.FrameCount; f++)
             {
-                var position = reader.BaseStream.Position;
-
                 var frame = new AseFrame(reader, this, f, ase);
                 if (frame.MagicNumber != 0xF1FA)
                 {
@@ -441,20 +514,72 @@ public class Aseprite
                     return;
                 }
                 _frames.Add(frame);
-
-                reader.BaseStream.Position = position + frame.FrameSize;
             }
         }
 
+        int tSize = 1;
+        while (_frames.Count > tSize * tSize)
+        {
+            tSize *= 2;
+        }
+
+        var mainTexture = new Texture2D(Header.Width * tSize, Header.Height * tSize, TextureFormat.RGBA32, true);
+        mainTexture.name = $"Texture";
+        mainTexture.filterMode = FilterMode.Point;
+
+        var mainTexturePixels = new Color32[Header.Width * tSize * Header.Height * tSize];
+
+        for(var p=0; p< mainTexturePixels.Length; p++)
+        {
+            var fRow = p / (tSize * Header.Width * Header.Height);
+            var fColumn = (p - ((p / (tSize * Header.Width)) * tSize * Header.Width))/Header.Width; 
+            var frameIndex = (tSize*tSize) - (fRow*tSize) - tSize + fColumn;
+
+            if (frameIndex < _frames.Count)
+            {
+                int xCoord;
+                Math.DivRem(p - (fRow * tSize * Header.Width * Header.Height), Header.Width, out xCoord);
+
+                int yCoord = (p / (tSize * Header.Width)) - (fRow * Header.Height);
+                int celIndex = yCoord * Header.Width + xCoord;
+
+                mainTexturePixels[p] = _frames[frameIndex].MergedFrame[celIndex];
+            }
+        }
+
+        mainTexture.SetPixels32(mainTexturePixels);
+
+        _atlas = mainTexture;
+
+        mainTexture.Apply(true, false);
+
+        var sprites = new List<Sprite>();
+
+        for(var f=0; f<tSize*tSize; f++)
+        {
+            var rectY = (Header.Height * tSize) - ((f / tSize)*Header.Height) - Header.Height;
+            var rectX = (f * Header.Width) - ((f / tSize) * Header.Width * tSize);
+
+            var spriteRect = new Rect(rectX, rectY, Header.Width, Header.Height);
+            var newSprite = Sprite.Create(mainTexture, spriteRect, new Vector2(0.5f, 0.5f));
+            newSprite.name = $"Frame {f}";
+
+            sprites.Add(newSprite);
+
+            //ase.AddObjectToAsset(newSprite.name, newSprite, AssetPreview.GetMiniThumbnail(newSprite));
+        }
+
+        _sprites = sprites.ToArray();
+
         if (Palette != null)
         {
-            int tSize = 8;
+            tSize = 8;
             while (Palette.PaletteSize - 1 > tSize * tSize)
             {
                 tSize *= 2;
             }
 
-            var paletteTexture = new Texture2D(tSize, tSize, TextureFormat.RGB24, false);
+            var paletteTexture = new Texture2D(tSize, tSize, TextureFormat.RGB24, true);
             paletteTexture.name = "Color Palette";
             paletteTexture.filterMode = FilterMode.Point;
 
@@ -472,8 +597,8 @@ public class Aseprite
                 }
             }
 
-            ase.AddObjectToAsset("Color Palette", paletteTexture);
-            ase.SetMainObject(paletteTexture);
+            //ase.AddObjectToAsset("Color Palette", paletteTexture, AssetPreview.GetMiniThumbnail(paletteTexture));
+            //ase.SetMainObject(paletteTexture);
         }
     }
 }

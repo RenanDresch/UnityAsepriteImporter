@@ -7,4 +7,6 @@ ScriptedImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-  script: {instanceID: 0}
+  script: {fileID: 11500000, guid: 62c9582ebe2158d45ba146092defd5ed, type: 3}
+  Aseprite:
+    _atlas: {instanceID: 0}
