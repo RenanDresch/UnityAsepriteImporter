@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using UnityEngine;
 
-namespace Assets.AsepriteImporter.Runtime.Data
+namespace AsepriteImporter.Runtime.Data
 {
     public class AseColor
     {

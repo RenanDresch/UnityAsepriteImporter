@@ -1,9 +1,7 @@
-﻿
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
-namespace Assets.AsepriteImporter.Runtime.Data
+namespace AsepriteImporter.Runtime.Data
 {
     public class AsePalette
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.AsepriteImporter.Runtime.Enums
+namespace AsepriteImporter.Runtime.Enums
 {
     public enum ColorDepth : UInt16
     {

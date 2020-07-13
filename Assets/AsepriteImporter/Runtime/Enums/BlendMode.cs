@@ -1,7 +1,6 @@
-﻿
-using System;
+﻿using System;
 
-namespace Assets.AsepriteImporter.Runtime.Enums
+namespace AsepriteImporter.Runtime.Enums
 {
     public enum BlendMode : UInt16
     {

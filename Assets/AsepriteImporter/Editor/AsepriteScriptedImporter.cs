@@ -1,9 +1,9 @@
 ﻿using UnityEditor.Experimental.AssetImporters;
 using System.IO;
-using Assets.AsepriteImporter.Runtime.Data;
+using AsepriteImporter.Runtime.Data;
 
 [ScriptedImporter(1, new string[] { "aseprite", "ase" })]
-public class AsepriteImporter : ScriptedImporter
+public class AsepriteScriptedImporter : ScriptedImporter
 {
     public Aseprite Aseprite;
 
