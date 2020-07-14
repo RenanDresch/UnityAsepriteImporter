@@ -1,8 +1,8 @@
-﻿using Assets.AsepriteImporter.Runtime.Enums;
+﻿using AsepriteImporter.Runtime.Enums;
 using System.IO;
 using System.Text;
 
-namespace Assets.AsepriteImporter.Runtime.Data
+namespace AsepriteImporter.Runtime.Data
 {
     public class AseLayer
     {

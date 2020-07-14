@@ -9,22 +9,22 @@ ScriptedImporter:
   assetBundleVariant: 
   script: {fileID: 11500000, guid: 62c9582ebe2158d45ba146092defd5ed, type: 3}
   Aseprite:
-    _atlas: {fileID: -8328923581568760697, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    _atlas: {instanceID: 0}
     _colorPalette: {instanceID: 0}
     _sprites:
-    - {fileID: 281156562338972011, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 6872434207943751691, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -1237359275472836673, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 7285498346003639227, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -6187201682966489015, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -5124072032256118538, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 3235102618344768896, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -8511888777446900694, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -3514807182990739396, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 8195307575741820159, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -6305857239121019882, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -24707461605624956, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 7237689214023147876, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: 1726319998569188188, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -9037173158821975802, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
-    - {fileID: -7645289731902524068, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}
+    - {instanceID: 0}

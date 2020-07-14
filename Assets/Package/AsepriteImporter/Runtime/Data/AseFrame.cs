@@ -1,10 +1,10 @@
-﻿using Assets.AsepriteImporter.Runtime.Enums;
+﻿using AsepriteImporter.Runtime.Enums;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace Assets.AsepriteImporter.Runtime.Data
+namespace AsepriteImporter.Runtime.Data
 {
     public class AseFrame
     {

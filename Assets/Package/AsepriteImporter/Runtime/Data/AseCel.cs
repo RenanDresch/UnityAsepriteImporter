@@ -1,9 +1,9 @@
-﻿using Assets.AsepriteImporter.Runtime.Enums;
+﻿using AsepriteImporter.Runtime.Enums;
 using System.IO;
 using System.IO.Compression;
 using UnityEngine;
 
-namespace Assets.AsepriteImporter.Runtime.Data
+namespace AsepriteImporter.Runtime.Data
 {
     public class AseCel
     {
