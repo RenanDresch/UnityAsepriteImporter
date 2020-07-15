@@ -75,7 +75,7 @@ namespace AsepriteImporter.Runtime.Data
 
         #endregion
 
-        public AseFrame(BinaryReader reader, Aseprite file, int frameIndex)
+        public AseFrame(BinaryReader reader, Aseprite file)
         {
             FrameSize = (int)reader.ReadUInt32();
             MagicNumber = reader.ReadUInt16();
@@ -113,7 +113,6 @@ namespace AsepriteImporter.Runtime.Data
                     case ChunkType.ColorProfileChunk:
                     case ChunkType.MaskChunkDeprecated:
                     case ChunkType.PathChunk:
-                    case ChunkType.TagsChunk:
                     case ChunkType.UserDataChunk:
                     case ChunkType.SliceChunk:
                         //Skip unsuported chunk
@@ -132,6 +131,16 @@ namespace AsepriteImporter.Runtime.Data
                         var layer = new AseLayer(reader, file);
                         if (layer.LayerType == LayerType.Normal)
                             layers.Add(layer);
+                        break;
+
+                    case ChunkType.TagsChunk:
+                        var numberOfTags = reader.ReadUInt16();
+                        reader.ReadBytes(8); //For future
+                        var tags = new List<AseTag>();
+                        for(var t=0; t<numberOfTags; t++)
+                        {
+                            tags.Add(new AseTag(reader));
+                        }
                         break;
                 }
 

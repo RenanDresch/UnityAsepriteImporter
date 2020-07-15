@@ -150,7 +150,7 @@ namespace AsepriteImporter.Runtime.Data
 
                 for (var f = 0; f < Header.FrameCount; f++)
                 {
-                    var frame = new AseFrame(reader, this, f);
+                    var frame = new AseFrame(reader, this);
                     _frames.Add(frame);
                 }
             }
