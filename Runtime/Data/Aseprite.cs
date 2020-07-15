@@ -194,26 +194,6 @@ namespace AsepriteImporter.Runtime.Data
             return sprites.ToArray();
         }
 
-        //private AnimationClip[] GenerateClips(AseTag tag, Sprite[] frames)
-        //{
-        //    //Keyframe
-        //    //ObjectReferenceKeyframe[] spriteKeyFrames = new ObjectReferenceKeyframe[sprites.Length];
-        //    //for (int i = 0; i < (sprites.Length); i++)
-        //    //{
-        //    //    spriteKeyFrames[i] = new ObjectReferenceKeyframe();
-        //    //    spriteKeyFrames[i].time = i;
-        //    //    spriteKeyFrames[i].value = sprites[i];
-        //    //}
-        //    //AnimationUtility.SetObjectReferenceCurve(animClip, spriteBinding, spriteKeyFrames);
-        //}
-
         #endregion
-
-        #region Public Methods
-
-        //public AseAnimationKeyframe[] GetAnimationKeyframes()
-
-        #endregion
-
     }
 }

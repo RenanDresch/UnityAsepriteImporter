@@ -20,48 +20,51 @@ public class AsepriteScriptedImporter : ScriptedImporter
 
     private void AddAnimation(string prefix, Sprite[] sprites, AssetImportContext ase)
     {
-        foreach (var tag in Aseprite.Frames[0].Tags)
+        if (Aseprite.Frames[0].Tags != null)
         {
-            var clip = new AnimationClip();
-            var keyframes = new ObjectReferenceKeyframe[tag.ToFrame - tag.FromFrame + 2];
-
-            clip.name = prefix + tag.Name;
-
-            clip.frameRate = 100;
-
-            AnimationClipSettings clipSettings = new AnimationClipSettings();
-            clipSettings.loopTime = true;
-
-            AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
-
-            EditorCurveBinding spriteBinding = new EditorCurveBinding();
-            spriteBinding.type = typeof(SpriteRenderer);
-            spriteBinding.path = "";
-            spriteBinding.propertyName = "m_Sprite";
-
-            var kfIndex = 0;
-            float currentTime = 0;
-
-            for (var f = tag.FromFrame; f <= tag.ToFrame; f++)
+            foreach (var tag in Aseprite.Frames[0].Tags)
             {
-                keyframes[kfIndex] = new ObjectReferenceKeyframe();
-                keyframes[kfIndex].time = currentTime;
-                keyframes[kfIndex].value = sprites[f];
-                currentTime += (float)Aseprite.Frames[f].FrameDuration / 1000;
+                var clip = new AnimationClip();
+                var keyframes = new ObjectReferenceKeyframe[tag.ToFrame - tag.FromFrame + 2];
 
-                kfIndex++;
+                clip.name = prefix + tag.Name;
 
-                if (f == tag.ToFrame)
+                clip.frameRate = 100;
+
+                AnimationClipSettings clipSettings = new AnimationClipSettings();
+                clipSettings.loopTime = true;
+
+                AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
+
+                EditorCurveBinding spriteBinding = new EditorCurveBinding();
+                spriteBinding.type = typeof(SpriteRenderer);
+                spriteBinding.path = "";
+                spriteBinding.propertyName = "m_Sprite";
+
+                var kfIndex = 0;
+                float currentTime = 0;
+
+                for (var f = tag.FromFrame; f <= tag.ToFrame; f++)
                 {
-                    currentTime -= (1 / 1000);
                     keyframes[kfIndex] = new ObjectReferenceKeyframe();
                     keyframes[kfIndex].time = currentTime;
                     keyframes[kfIndex].value = sprites[f];
-                }
-            }
+                    currentTime += (float)Aseprite.Frames[f].FrameDuration / 1000;
 
-            AnimationUtility.SetObjectReferenceCurve(clip, spriteBinding, keyframes);
-            ase.AddObjectToAsset(clip.name, clip);
+                    kfIndex++;
+
+                    if (f == tag.ToFrame)
+                    {
+                        currentTime -= (1 / 1000);
+                        keyframes[kfIndex] = new ObjectReferenceKeyframe();
+                        keyframes[kfIndex].time = currentTime;
+                        keyframes[kfIndex].value = sprites[f];
+                    }
+                }
+
+                AnimationUtility.SetObjectReferenceCurve(clip, spriteBinding, keyframes);
+                ase.AddObjectToAsset(clip.name, clip);
+            }
         }
     }
 
