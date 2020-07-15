@@ -19,6 +19,8 @@ namespace AsepriteImporter.Runtime.Data
 
         public Color32[] MergedFrame { get; }
 
+        public AseLayer[] Layers { get; }
+
         #endregion
 
         #region Private Methods
@@ -92,6 +94,7 @@ namespace AsepriteImporter.Runtime.Data
             var celIndex = 0;
 
             var cels = new List<AseCel>();
+            var layers = new List<AseLayer>();
 
             for (var c = 0; c < chunkCount; c++)
             {
@@ -126,13 +129,16 @@ namespace AsepriteImporter.Runtime.Data
                         break;
 
                     case ChunkType.LayerChunk:
-                        new AseLayer(reader, file);
+                        var layer = new AseLayer(reader, file);
+                        if (layer.LayerType == LayerType.Normal)
+                            layers.Add(layer);
                         break;
                 }
 
                 reader.BaseStream.Position = position + chunkSize;
             }
 
+            Layers = layers.ToArray();
             Cels = cels.ToArray();
 
             if (Cels.Length > 1)

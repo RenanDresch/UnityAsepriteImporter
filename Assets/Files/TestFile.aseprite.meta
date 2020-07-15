@@ -8,23 +8,63 @@ ScriptedImporter:
   assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 11500000, guid: 62c9582ebe2158d45ba146092defd5ed, type: 3}
+  Pivot: 3
+  PivotPosition: {x: 1, y: 1}
   Aseprite:
-    _atlas: {instanceID: 0}
-    _colorPalette: {instanceID: 0}
+    _atlas: {fileID: 6329922392396033290, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    _colorPalette: {fileID: 8925629730587008048, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
     _sprites:
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
-    - {instanceID: 0}
+    - {fileID: -95003546146255186, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 814711103186227287, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 678414083168802071, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -6127828788598974152, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -754533885917624367, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 776018271546983170, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -2431266620906535053, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -6076208758624254134, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 5966043841682680399, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -3536444609977845140, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -7855517242161321565, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -9209465017393877413, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -5414508326268856278, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -6711449822470615612, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 9140132185917497598, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 66330111966517093, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    _layerSprites:
+    - {fileID: -605554117179765398, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -6532256933251026216, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 4190714993690965033, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -5071357872110700163, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -5603398697076718744, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -2446156318851716089, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -7655162414612162801, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 7079924624367413056, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 7908408819610712897, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 5943204710659621216, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 9146314538918242617, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 2254796682856868114, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 4598048231516597125, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -4399101752944670634, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 8775348172599303845, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 6753150953443959467, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -4727988142844980405, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 7218694735305155297, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 3716526919530784286, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -7354265477911874497, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -5155066547689733266, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 8183454381751237164, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -5300798194224024839, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -7803055681042972510, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 3728341803969959559, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -1312955339233597185, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -2312187598398162097, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 2326836425771149425, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -1968232730600755154, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -2779048627152909907, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 6722294422456855315, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: -436153862409342311, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    _layersAtlas:
+    - {fileID: -6924703061392703571, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+    - {fileID: 2401537986279672676, guid: 0a28be927d1b9b949bd3e5c90340ee63, type: 3}
+  MergedLayersImportOption: 2
+  SeparateLayersImportOption: 0
