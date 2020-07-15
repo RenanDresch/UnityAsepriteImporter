@@ -15,7 +15,7 @@ namespace AsepriteImporter.Runtime.Data
 
         #region Private Methods
 
-        private Color32[] GetCelPixels(byte[] pixels, Rect cell, int textureWidth, int textureHeight, ColorDepth depth)
+        private Color32[] GetCelPixels(byte[] pixels, Rect cell, int textureWidth, int textureHeight, ColorDepth depth, AsePalette palette)
         {
             var colors = new Color32[textureWidth * textureHeight];
             var celPixelIndex = 0;
@@ -28,13 +28,31 @@ namespace AsepriteImporter.Runtime.Data
                     {
                         if (c < (cell.width + cell.position.x) && c >= cell.position.x)
                         {
-                            //Todo : indexed and gray readings
-                            colors[r * textureWidth + c] = new Color32(
-                                pixels[celPixelIndex],
-                                pixels[celPixelIndex + 1],
-                                pixels[celPixelIndex + 2],
-                                pixels[celPixelIndex + 3]);
-                            celPixelIndex += 4;
+                            switch (depth)
+                            {
+                                case ColorDepth.RGBA:
+                                    colors[r * textureWidth + c] = new Color32(
+                                        pixels[celPixelIndex],
+                                        pixels[celPixelIndex + 1],
+                                        pixels[celPixelIndex + 2],
+                                        pixels[celPixelIndex + 3]);
+                                    celPixelIndex += 4;
+                                    break;
+
+                                case ColorDepth.Grayscale:
+                                    colors[r * textureWidth + c] = new Color32(
+                                        pixels[celPixelIndex],
+                                        pixels[celPixelIndex],
+                                        pixels[celPixelIndex],
+                                        pixels[celPixelIndex + 1]);
+                                    celPixelIndex += 2;
+                                    break;
+
+                                case ColorDepth.Indexed:
+                                    colors[r * textureWidth + c] = palette.Colors[pixels[celPixelIndex]].Color;
+                                    celPixelIndex ++;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -79,7 +97,7 @@ namespace AsepriteImporter.Runtime.Data
                     deflate.Read(celData, 0, celWidth * celHeight * 4);
 
                     Pixels = GetCelPixels(celData, new Rect(xPosition, yPosition, celWidth, celHeight),
-                        file.Header.Width, file.Header.Height, file.Header.ColorDepth);
+                        file.Header.Width, file.Header.Height, file.Header.ColorDepth, file.Palette);
                     break;
 
                 default:
