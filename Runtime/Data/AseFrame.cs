@@ -16,8 +16,9 @@ namespace AsepriteImporter.Runtime.Data
         public int FrameDuration { get; }
 
         public AseCel[] Cels { get; }
-
         public Color32[] MergedFrame { get; }
+        public AseLayerChunk[] Layers { get; }
+        public AseTag[] Tags { get; }
 
         #endregion
 
@@ -73,7 +74,7 @@ namespace AsepriteImporter.Runtime.Data
 
         #endregion
 
-        public AseFrame(BinaryReader reader, Aseprite file, int frameIndex)
+        public AseFrame(BinaryReader reader, Aseprite file)
         {
             FrameSize = (int)reader.ReadUInt32();
             MagicNumber = reader.ReadUInt16();
@@ -92,6 +93,7 @@ namespace AsepriteImporter.Runtime.Data
             var celIndex = 0;
 
             var cels = new List<AseCel>();
+            var layers = new List<AseLayerChunk>();
 
             for (var c = 0; c < chunkCount; c++)
             {
@@ -110,7 +112,6 @@ namespace AsepriteImporter.Runtime.Data
                     case ChunkType.ColorProfileChunk:
                     case ChunkType.MaskChunkDeprecated:
                     case ChunkType.PathChunk:
-                    case ChunkType.TagsChunk:
                     case ChunkType.UserDataChunk:
                     case ChunkType.SliceChunk:
                         //Skip unsuported chunk
@@ -126,13 +127,27 @@ namespace AsepriteImporter.Runtime.Data
                         break;
 
                     case ChunkType.LayerChunk:
-                        new AseLayer(reader, file);
+                        var layer = new AseLayerChunk(reader, file);
+                        if (layer.LayerType == LayerType.Normal)
+                            layers.Add(layer);
+                        break;
+
+                    case ChunkType.TagsChunk:
+                        var numberOfTags = reader.ReadUInt16();
+                        reader.ReadBytes(8); //For future
+                        var tags = new List<AseTag>();
+                        for(var t=0; t<numberOfTags; t++)
+                        {
+                            tags.Add(new AseTag(reader));
+                        }
+                        Tags = tags.ToArray();
                         break;
                 }
 
                 reader.BaseStream.Position = position + chunkSize;
             }
 
+            Layers = layers.ToArray();
             Cels = cels.ToArray();
 
             if (Cels.Length > 1)
