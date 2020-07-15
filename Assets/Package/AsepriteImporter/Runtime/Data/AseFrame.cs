@@ -16,10 +16,9 @@ namespace AsepriteImporter.Runtime.Data
         public int FrameDuration { get; }
 
         public AseCel[] Cels { get; }
-
         public Color32[] MergedFrame { get; }
-
-        public AseLayer[] Layers { get; }
+        public AseLayerChunk[] Layers { get; }
+        public AseTag[] Tags { get; }
 
         #endregion
 
@@ -94,7 +93,7 @@ namespace AsepriteImporter.Runtime.Data
             var celIndex = 0;
 
             var cels = new List<AseCel>();
-            var layers = new List<AseLayer>();
+            var layers = new List<AseLayerChunk>();
 
             for (var c = 0; c < chunkCount; c++)
             {
@@ -128,7 +127,7 @@ namespace AsepriteImporter.Runtime.Data
                         break;
 
                     case ChunkType.LayerChunk:
-                        var layer = new AseLayer(reader, file);
+                        var layer = new AseLayerChunk(reader, file);
                         if (layer.LayerType == LayerType.Normal)
                             layers.Add(layer);
                         break;
@@ -141,6 +140,7 @@ namespace AsepriteImporter.Runtime.Data
                         {
                             tags.Add(new AseTag(reader));
                         }
+                        Tags = tags.ToArray();
                         break;
                 }
 

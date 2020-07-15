@@ -1,35 +1,31 @@
-﻿using AsepriteImporter.Runtime.Enums;
-using System.IO;
-using System.Text;
+﻿using UnityEngine;
 
 namespace AsepriteImporter.Runtime.Data
 {
+    [System.Serializable]
     public class AseLayer
     {
-        #region Properties
+        #region Fields
 
-        public LayerFlags Flags { get; }
-        public LayerType LayerType { get; }
-        public int LayerChildLevel { get; }
-        public BlendMode BlendMode { get; }
-        public int Opacity { get; }
-        public string Name { get; }
+        [SerializeField]
+        private Texture2D _texture = default;
+
+        [SerializeField]
+        private Sprite[] _sprites = default;
 
         #endregion
 
-        public AseLayer(BinaryReader reader, Aseprite file)
+        #region Properties
+
+        public Texture2D Texture => _texture;
+        public Sprite[] Sprites => _sprites;
+
+        #endregion
+
+        public AseLayer(Texture2D texture, Sprite[] sprites)
         {
-            Flags = (LayerFlags)reader.ReadUInt16();
-            LayerType = (LayerType)reader.ReadUInt16();
-            LayerChildLevel = reader.ReadUInt16();
-            var layerWidth = reader.ReadUInt16(); //Ignored;
-            var layerHeight = reader.ReadUInt16(); //Ignored;
-            BlendMode = (BlendMode)reader.ReadUInt16();
-            Opacity = reader.ReadByte();
-            reader.ReadBytes(3); //For Future
-            var nameSize = reader.ReadUInt16();
-            var name = reader.ReadBytes(nameSize);
-            Name = Encoding.UTF8.GetString(name, 0, nameSize);
+            _texture = texture;
+            _sprites = sprites;
         }
     }
 }

@@ -14,18 +14,13 @@ namespace AsepriteImporter.Runtime.Data
         private List<AseFrame> _frames = new List<AseFrame>();
 
         [SerializeField]
-        private Texture2D _atlas;
-
-        [SerializeField]
         private Texture2D _colorPalette;
 
         [SerializeField]
-        private Sprite[] _sprites;
-        [SerializeField]
-        private Sprite[] _layerSprites;
+        private AseLayer _mergedLayer;
 
         [SerializeField]
-        private Texture2D[] _layersAtlas;
+        private List<AseLayer> _layers = new List<AseLayer>();
 
         #endregion
 
@@ -35,11 +30,75 @@ namespace AsepriteImporter.Runtime.Data
         public List<AseFrame> Frames => _frames;
         public AsePalette Palette { get; set; }
 
-        public Texture2D Atlas => _atlas;
         public Texture2D ColorPalette => _colorPalette;
-        public Sprite[] Sprites => _sprites;
-        public Sprite[] LayerSprites => _layerSprites;
-        public Texture2D[] LayersAtlas => _layersAtlas;
+        public AseLayer MergedLayer => _mergedLayer;
+        public AseLayer[] Layers => _layers.ToArray();
+
+        #endregion
+
+        #region Constructor
+
+        public Aseprite(byte[] binary, AseImportOptions mergedLayerImportOptions = AseImportOptions.Animations,
+            AseImportOptions separateLayersImportOptions = AseImportOptions.None, Vector2 pivotPosition = default
+            , string fileName = "Aseprite")
+        {
+
+            var stream = new MemoryStream(binary);
+
+            using (BinaryReader reader = new BinaryReader(stream))
+            {
+                Header = new AseHeader(reader);
+
+                for (var f = 0; f < Header.FrameCount; f++)
+                {
+                    var frame = new AseFrame(reader, this);
+                    _frames.Add(frame);
+                }
+            }
+
+            GeneratePaletteTexture();
+
+            if ((int)separateLayersImportOptions > 0)
+            {
+                int layerCount = Frames[0].Layers.Length;
+                var cels = new List<Color32[]>();
+
+                for (var l = 0; l < layerCount; l++)
+                {
+                    cels.Clear();
+                    for (var f = 0; f < Frames.Count; f++)
+                    {
+                        if (Frames[f].Cels.Length > l)
+                        {
+                            cels.Add(Frames[f].Cels[l].Pixels);
+                        }
+                        else
+                        {
+                            cels.Add(new Color32[Header.Width * Header.Height]);
+                        }
+                    }
+                    var atlasResult = GenerateAtlas($"{fileName}_Layer_{l}", cels);
+                    var layerSprites = SliceSprites(atlasResult.Item2, atlasResult.Item1, pivotPosition);
+
+                    _layers.Add(new AseLayer(atlasResult.Item2, layerSprites));
+                }
+            }
+
+            if ((int)mergedLayerImportOptions > 0)
+            {
+                var cels = new List<Color32[]>();
+                foreach (var frame in Frames)
+                {
+                    cels.Add(frame.MergedFrame);
+                }
+
+                var atlasResult = GenerateAtlas(fileName, cels);
+                var layerSprites = SliceSprites(atlasResult.Item2, atlasResult.Item1, pivotPosition);
+
+                _mergedLayer = new AseLayer(atlasResult.Item2, layerSprites);
+            }
+        }
+
 
         #endregion
 
@@ -135,75 +194,26 @@ namespace AsepriteImporter.Runtime.Data
             return sprites.ToArray();
         }
 
+        //private AnimationClip[] GenerateClips(AseTag tag, Sprite[] frames)
+        //{
+        //    //Keyframe
+        //    //ObjectReferenceKeyframe[] spriteKeyFrames = new ObjectReferenceKeyframe[sprites.Length];
+        //    //for (int i = 0; i < (sprites.Length); i++)
+        //    //{
+        //    //    spriteKeyFrames[i] = new ObjectReferenceKeyframe();
+        //    //    spriteKeyFrames[i].time = i;
+        //    //    spriteKeyFrames[i].value = sprites[i];
+        //    //}
+        //    //AnimationUtility.SetObjectReferenceCurve(animClip, spriteBinding, spriteKeyFrames);
+        //}
+
         #endregion
 
-        public Aseprite(byte[] binary, AseImportOptions mergedLayerImportOptions = AseImportOptions.Animations,
-            AseImportOptions separateLayersImportOptions = AseImportOptions.None, Vector2 pivotPosition = default
-            , string fileName = "Aseprite")
-        {
+        #region Public Methods
 
-            var stream = new MemoryStream(binary);
+        //public AseAnimationKeyframe[] GetAnimationKeyframes()
 
-            using (BinaryReader reader = new BinaryReader(stream))
-            {
-                Header = new AseHeader(reader);
+        #endregion
 
-                for (var f = 0; f < Header.FrameCount; f++)
-                {
-                    var frame = new AseFrame(reader, this);
-                    _frames.Add(frame);
-                }
-            }
-
-            GeneratePaletteTexture();
-
-            if ((int)separateLayersImportOptions > 0)
-            {
-                int layerCount = Frames[0].Layers.Length;
-                var cels = new List<Color32[]>();
-
-                var layersAtlas = new List<Texture2D>();
-                var spritesList = new List<Sprite>();
-
-                for (var l = 0; l < layerCount; l++)
-                {
-                    cels.Clear();
-                    for (var f = 0; f < Frames.Count; f++)
-                    {
-                        if (Frames[f].Cels.Length > l)
-                        {
-                            cels.Add(Frames[f].Cels[l].Pixels);
-                        }
-                        else
-                        {
-                            cels.Add(new Color32[Header.Width * Header.Height]);
-                        }
-                    }
-                    var atlasResult = GenerateAtlas($"{fileName}_Layer_{l}", cels);
-                    layersAtlas.Add(atlasResult.Item2);
-                    if ((int)separateLayersImportOptions > 1)
-                    {
-                        spritesList.AddRange(SliceSprites(atlasResult.Item2, atlasResult.Item1, pivotPosition));
-                    }
-                }
-                _layersAtlas = layersAtlas.ToArray();
-                _layerSprites = spritesList.ToArray();
-            }
-
-            if ((int)mergedLayerImportOptions > 0)
-            {
-                var cels = new List<Color32[]>();
-                foreach(var frame in Frames)
-                {
-                    cels.Add(frame.MergedFrame);
-                }
-                var atlasResult = GenerateAtlas(fileName, cels);
-                _atlas = atlasResult.Item2;
-                if ((int)mergedLayerImportOptions > 1)
-                {
-                    _sprites = SliceSprites(_atlas, atlasResult.Item1, pivotPosition);
-                }
-            }
-        }
     }
 }
