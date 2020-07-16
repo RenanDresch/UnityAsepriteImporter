@@ -1,7 +1,18 @@
 # UnityAsepriteImporter
 Aseprite auto import (drag and drop files) plugin for Unity.
 
+![example gif](https://raw.githubusercontent.com/RenanDresch/UnityAsepriteImporter/master/Readme/asepriteImporter.gif)
+
+Can import merged file atlas + sliced sprites + animations (by tag)
+
+![import example](https://raw.githubusercontent.com/RenanDresch/UnityAsepriteImporter/master/Readme/import.jpg)
+
 Supports layer merging (normal blending).
-Will merge down every frame into a single texture atlas and will split it into sprites.
-Check progress on future features here:
-https://trello.com/b/tBOzcyKK/unity-aseprite-importer 
+
+![merge image](https://github.com/RenanDresch/UnityAsepriteImporter/blob/master/Readme/merge.jpg)
+
+Supports RGBA, Grayscale and Indexed formats!
+
+![depths](https://raw.githubusercontent.com/RenanDresch/UnityAsepriteImporter/master/Readme/depth.jpg)
+
+Can also import separate layers as separate textures + sprites + animations
